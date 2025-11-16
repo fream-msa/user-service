@@ -1,0 +1,95 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.7'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.fream-v2'
+version = '0.0.1-SNAPSHOT'
+description = 'User Management Microservice'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springCloudVersion', "2025.0.0")
+}
+
+dependencies {
+    // ===== Web Layer (WebFlux - Netty) =====
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // ===== Data Access (R2DBC - Reactive) =====
+    implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+    runtimeOnly 'org.postgresql:r2dbc-postgresql'
+    runtimeOnly 'io.r2dbc:r2dbc-h2'
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // ===== Security =====
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server' // JWT 검증
+
+    // ===== Cloud - Service Discovery & Config =====
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // ===== Cloud - Resilience =====
+    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j' // Circuit Breaker
+    implementation 'org.springframework.boot:spring-boot-starter-aop' // AOP for Resilience4j
+
+    // ===== Messaging (Kafka) =====
+    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'io.projectreactor.kafka:reactor-kafka' // Reactive Kafka
+
+    // ===== Observability - Tracing (Zipkin) =====
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave' // Zipkin 연동
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave' // Zipkin Reporter
+
+    // ===== Observability - Metrics (Prometheus) =====
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    // ===== Observability - Logging (Loki) =====
+    implementation 'com.github.loki4j:loki-logback-appender:1.5.1' // Grafana Loki 연동
+
+    // ===== Validation =====
+    implementation 'org.springframework.boot:spring-boot-starter-validation' // JSR-303 Validation
+
+    // ===== API Documentation (Swagger) =====
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.4' // Swagger UI for WebFlux
+
+    // ===== Utilities =====
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // ===== Testing =====
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
